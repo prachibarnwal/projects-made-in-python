@@ -1,0 +1,2067 @@
+#module import
+import mysql.connector
+from prettytable import PrettyTable
+import random as rd
+
+#establishing connection
+con = mysql.connector.connect(host = 'localhost',user = "root", password = "")
+cur = con.cursor()
+
+#database making
+q = "CREATE DATABASE SCHOOL_MANAGEMENT"
+cur.execute(q)
+
+#to activate database
+q = "use SCHOOL_MANAGEMENT"
+cur.execute(q)
+
+#table making for student details
+q = '''create table student (
+admno integer primary key,
+sname varchar(40) not null,
+age integer,
+d_o_adm date,
+d_o_bir date,
+phone varchar(20),
+email varchar(60) unique,
+address varchar(100),
+division int,
+m_name varchar(50),
+f_name varchar(50))'''
+cur.execute(q)
+
+#table making for teacher details
+q = '''create table teacher(
+tid integer primary key,
+tname varchar(50) not null,
+age integer,
+experience integer,
+d_o_join date,
+d_o_bir date,
+phone varchar(30),
+email varchar(100),
+address varchar(100),
+subid varchar(40))'''
+cur.execute(q)
+
+#table making for student's attendance
+q = ''' create table attendance
+(admno integer,
+month varchar(20),
+working_day integer,
+present_day integer)'''
+cur.execute(q)
+
+#table making for class details
+q = '''create table classes
+(division integer,
+section char(2),
+no_o_stu integer,
+location varchar(20),
+class_teacher varchar(60)'''
+cur.execute(q)
+
+#table making for staff details
+q = ''' create table staff
+(sid integer primary key,
+sname varchar(50),
+gender varchar(7),
+units varchar(30),
+salary integer,
+working_hour integer,
+age integer,
+address varchar(50),
+mobile varchar(20),
+D_O_Join date)'''
+cur.execute(q)
+
+#table making for fee details
+q = '''CREATE TABLE FEES
+(ADMNO INTEGER,
+MONTH VARCHAR(20),
+FEE INTEGER,
+CASHIER_NAME VARCHAR(50))'''
+cur.execute(q)
+
+#table making for batch details
+q = '''create table batches
+(bid integer primary key,
+bname varchar(60),
+days varchar(60),
+btime varchar(10),
+cid integer,
+fees integer)'''
+cur.execute(q)
+
+#table making for coach details
+q = '''create table coach(
+cid int primary key,
+cname varchar(50) not null,
+sid integer,
+experience integer,
+phone varchar(30),
+email varchar(100),
+address varchar(100))'''
+cur.execute(q)
+
+#table for sports details
+q = '''create table sports(
+sid integer primary key,
+sname varchar(40) not null,
+category varchar(10),
+fees integer,
+equipment varchar(100))'''
+cur.execute(q)
+
+#table making for sports members details
+q = '''create table member (
+mid integer primary key,
+mname varchar(40) not null,
+age integer,
+doj date,
+phone varchar(20),
+email varchar(60) unique,
+address varchar(100),
+mtype varchar(20))'''
+cur.execute(q)
+
+#table making for enrollments
+q = '''create table enrollments
+(bid integer,
+mid integer);'''
+cur.execute(q)
+
+#table making for school trip records
+q = '''create table school_trip
+(destination varchar(50),
+d_o_dest date,
+incharge varchar(50),
+duration integer,
+division integer,
+charges integer,
+no_o_stu integer)'''
+cur.execute(q)
+
+con.commit()
+
+#establishing connection
+con = mysql.connector.connect(host = 'localhost',user = "root", password = "", database = "SCHOOL_management")
+cur = con.cursor()
+
+#function for welcoming a user
+def welcome():
+    print("🏫🎒"*15)
+    print("\t\tAL ACADEMY")
+    print("🏫🎒"*15)
+    print("\t\t 1 -- manage students 🐻")
+    print("\t\t 2 -- manage attendance 🐻")
+    print("\t\t 3 -- manage teachers 🐻")
+    print("\t\t 4 -- manage classes 🐻")
+    print("\t\t 5 -- manage sports 🐻")
+    print("\t\t 6 -- manage staff members 🐻")
+    print("\t\t 7 -- enroll into a club 🐻")
+    print("\t\t 8 -- show all enrollments 🐻")
+    print("\t\t 9 -- manage fee 🐻")
+    print("\t\t 10 -- manage school trips 🐻")
+    print("\t\t 11 -- manage sports batches 🐻")
+    print("\t\t 12 -- manage sports member 🐻")
+    print("\t\t 13 -- exit 🐻")
+    ch = int(input("Enter Your Choice : "))
+    return ch
+
+#valid phone num or not
+def isPhoneValid(num):
+    if len(num) != 10:
+        return False
+    elif not num.isdigit():
+        return False
+    elif num[0] not in ("56789"):
+        return False
+    else:
+        return True
+
+#function to add a student
+def addStudent():
+    while True:
+        print("\n")
+        print("📖✏"*15)
+        print("Press 1 - Add a New Student")
+        print("Press 2- to go to the Main Menu")
+        print("📖✏"*15)
+        print("\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            q = "select max(admno) from student"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                admno = 1000
+            else:
+                admno = res[0] + 1
+            print("\n")
+            print("🦄🐾"*15)
+            print("\t\tADMISSION OF A NEW STUDENT")
+            print("🦄🐾"*15)
+            print("\n")
+            print("Enter Details for Student with Admission Number : ",admno)
+            sname = input("Enter Name of The Student : ")
+            age = int(input("Enter Age of The Member : "))
+            d_o_adm = input("Enter Date of Admission (yyyy-mm-dd) : ")
+            while True:
+                if len(d_o_adm) == 10 and d_o_adm[0:4].isdigit() and d_o_adm[4] == '-' and d_o_adm[5:7].isdigit() and d_o_adm[7] == '-' and d_o_adm[8:].isdigit() and int(d_o_adm[5:7]) <=12 and int(d_o_adm[8:]) <=31:
+                    break
+                else:
+                    print("Invalid Date....Try Again")
+                    d_o_adm = input("Enter Date of Admission (yyyy-mm-dd) : ")
+                    
+            d_o_bir = input("Enter Student's Date of Birth (yyyy-mm-dd) : ")
+            while True:
+                if len(d_o_bir) == 10 and d_o_bir[0:4].isdigit() and d_o_bir[4] == '-' and d_o_bir[5:7].isdigit() and d_o_bir[7] == '-' and d_o_bir[8:].isdigit() and int(d_o_bir[5:7]) <=12 and int(d_o_bir[8:]) <=31:
+                    break
+                else:
+                    print("Invalid Date....Try Again")
+                    d_o_bir = input("Enter Date of Birth (yyyy-mm-dd) : ")
+                    
+            phone = input("Enter Phone Number : ")
+            while True:
+                if isPhoneValid(phone):
+                    break
+                else:
+                    print("INVALID PHONE NUMBER")
+                    phone = input("Enter Phone Number : ")
+                    
+            email = input("Enter Student's Email-id : ")
+            address = input("Enter Address : ")
+            division = int(input("Enter in Which Class the Student is Taking Admission : "))
+            m_name = input("Enter Student's Mother's Name : ")
+            f_name = input("Enter Studnet's Father's Name : ")
+            
+            data = (admno,sname,age,d_o_adm,d_o_bir,phone,email,address,division,m_name,f_name)
+            q = "insert into student values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tADMISSION TAKEN SUCCESSFULLY")
+            print("🦄🐾"*15)
+            print("\n\n\n\n")
+        else:
+            break
+
+#Function to display all students
+def displayStudent():
+    q = "select * from student"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👧🧒"*15)
+    print("\t\tSTUDENT DETAILS")
+    print("👧🧒"*15)
+    print("\n\n\n\n")
+    myTable = PrettyTable(["Adm No","Name","Age","D_O_Adm","D_O_Bir","Phone","Email","Address","Class","M_Name","F_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n\n")
+
+#function to search a particular member
+def searchStudent():
+    admno = int(input("Enter Student's Admission Number to be Searched : "))
+    q = "select * from student where admno= "+str(admno)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("😶😣"*15)
+        print("No Student with This Admission Number Found")
+        print("😶😣"*15)
+        print("\n")
+        return
+    print("👩‍💻"*15)
+    print("\t\tSTUDENT DETAILS")
+    print("👩‍💻"*15)
+    myTable = PrettyTable(["Adm No","Name","Age","D_O_Adm","D_O_Bir","Phone","Email","Address","Class","M_Name","F_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n")
+    print("👩‍💻"*15)
+
+#function to remove a student
+def deleteStudent():
+    mid = int(input("Enter Student's Admission Number to be Removed : "))
+    q = "select * from student where admno= "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Student Found")
+        return
+    print("🎒💻"*15)
+    print("\t\tSTUDENT DETAILS")
+    print("🎒💻"*15)
+    print("\n")
+    myTable = PrettyTable(["Adm No","Name","Age","D_O_Adm","D_O_Bir","Phone","Email","Address","Class","M_Name","F_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Are You Sure You Want To Remove This Student (yes/no) : ")
+    if ch.lower() == 'yes':
+        print("🐼☝"*15)
+        q = "DELETE from student where admno = "+str(mid)
+        cur.execute(q)
+        con.commit()
+        print("\t\tSTUDENT REMOVED FROM THE SCHOOL")
+        print("🐼☝"*15)
+
+#function to update a student's record
+def updateStudent():
+    admno = int(input("Enter Student's Admission Number to be Updated : "))
+    q = "select * from student where admno= "+str(admno)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("😶😣"*15)
+        print("No Student with This Admission Number Found")
+        print("😶😣"*15)
+        print("\n")
+        return
+    print("👩‍💻"*15)
+    print("\t\tSTUDENT DETAILS")
+    print("👩‍💻"*15)
+    myTable = PrettyTable(["Adm No","Name","Age","D_O_Adm","D_O_Bir","Phone","Email","Address","Class","M_Name","F_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n")
+    
+    print("\tUPDATING STUDENT'S RECORDS")
+    ch = input("Do you want to Update the above shown Records (Y/N) : ")
+    if ch.lower() == 'y':
+        print("Enter New Details for Student having Admission Number : ",admno)
+        sname = input("Enter Updated Name of The Student : ")
+        age = int(input("Enter Updated Age of The Member : "))
+        d_o_adm = input("Enter Updated Date of Admission (yyyy-mm-dd) : ")
+        while True:
+            if len(d_o_adm) == 10 and d_o_adm[0:4].isdigit() and d_o_adm[4] == '-' and d_o_adm[5:7].isdigit() and d_o_adm[7] == '-' and d_o_adm[8:].isdigit() and int(d_o_adm[5:7]) <=12 and int(d_o_adm[8:]) <=31:
+                break
+            else:
+                print("Invalid Date....Try Again")
+                d_o_adm = input("Enter Updated Date of Admission (yyyy-mm-dd) : ")                
+        d_o_bir = input("Enter Student's Updated Date of Birth (yyyy-mm-dd) : ")
+        while True:
+            if len(d_o_bir) == 10 and d_o_bir[0:4].isdigit() and d_o_bir[4] == '-' and d_o_bir[5:7].isdigit() and d_o_bir[7] == '-' and d_o_bir[8:].isdigit() and int(d_o_bir[5:7]) <=12 and int(d_o_bir[8:]) <=31:
+                break
+            else:
+                print("Invalid Date....Try Again")
+                d_o_bir = input("Enter Date of Birth (yyyy-mm-dd) again : ")                
+        phone = input("Enter Updated Phone Number : ")
+        while True:
+            if isPhoneValid(phone):
+                break
+            else:
+                print("INVALID PHONE NUMBER")
+                phone = input("Enter Phone Number Again : ")                
+        email = input("Enter Student's Updated Email-id : ")
+        address = input("Enter Updated Address : ")
+        division = int(input("Enter the Updated Class in Which the Student is Taking Admission : "))
+        m_name = input("Enter Student's Mother's Updated Name : ")
+        f_name = input("Enter Studnet's Father's Updated Name : ")        
+        data = (sname,age,d_o_adm,d_o_bir,phone,email,address,division,m_name,f_name,admno)
+        q = "update student set sname = %s, age = %s, d_o_adm = %s, d_o_bir = %s,phone = %s,email = %s,address = %s,division = %s,M_name = %s,F_NAME = %s where admno = %s"
+        cur.execute(q,data)
+        con.commit()
+        print("\tADMISSION RECORD UPDATED SUCCESSFULLY")
+        print("🦄🐾"*15)
+        print("\n")
+
+#Function to manage records of members   
+def manage_students():
+    while True:
+        print("\n")
+        print("🌌🌕"*15)
+        print("\t\t 1 -- admission of a new student ☆")
+        print("\t\t 2 -- display all student details ☆")
+        print("\t\t 3 -- search a student ☆")
+        print("\t\t 4 -- remove a student ☆")
+        print("\t\t 5 -- update student records ☆")
+        print("\t\t 6 -- go back to main menu ☆")
+        print("🌌🌕"*15)
+        print("\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addStudent()
+        elif ch == 2:
+            displayStudent()
+        elif ch == 3:
+            searchStudent()
+        elif ch == 4:
+            deleteStudent()
+        elif ch == 5:
+            updateStudent()
+        elif ch == 6:
+            break
+        else:
+            print("Invalid Digit Pressed")
+            print("\n")
+
+#function to add a Teacher details
+def addTeacher():
+    while True:
+        print("\n")
+        print("📖✏"*15)
+        print("Press 1 - Add a Teacher Details")
+        print("Press 2 - Add a Coach Details")
+        print("Press 3- to go to the Main Menu")
+        print("📖✏"*15)
+        print("\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            q = "select max(tid) from TEACHER"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                cid = 100
+            else:
+                cid = res[0] + 1
+            print("\n")
+            print("🦄🐾"*15)
+            print("\t\tADDING A NEW TEACHER TO THE SCHOOL")
+            print("🦄🐾"*15)
+            print("\n")
+            print("Enter Details for the Teacher with id : ",cid)
+            tname = input("Enter Name of The Teacher : ")
+            age = int(input("Enter Teacher's Age : "))
+            experience = int(input("Enter How Many Years of Experience the Teacher is Having : "))
+            d_o_join = input("Enter Date of Joining (yyyy-mm-dd) : ")
+            while True:
+                if len(d_o_join) == 10 and d_o_join[0:4].isdigit() and d_o_join[4] == '-' and d_o_join[5:7].isdigit() and d_o_join[7] == '-' and d_o_join[8:].isdigit() and int(d_o_join[5:7]) <=12 and int(d_o_join[8:]) <=31:
+                    break
+                else:
+                    print("Invalid Date....Try Again")
+                    doj = input("Enter Date of Joining (yyyy-mm-dd) : ")
+                    
+            d_o_bir = input("Enter Teacher's Date of Birth (yyyy-mm-dd) : ")
+            while True:
+                if len(d_o_bir) == 10 and d_o_bir[0:4].isdigit() and d_o_bir[4] == '-' and d_o_bir[5:7].isdigit() and d_o_bir[7] == '-' and d_o_bir[8:].isdigit() and int(d_o_bir[5:7]) <=12 and int(d_o_bir[8:]) <=31:
+                    break
+                else:
+                    print("Invalid Date....Try Again")
+                    doj = input("Enter Date of Birth (yyyy-mm-dd) : ")
+
+            phone = input("Enter Phone Number : ")
+            while True:
+                if isPhoneValid(phone):
+                    break
+                else:
+                    print("INVALID PHONE NUMBER")
+                    phone = input("Enter Phone Number : ")
+            email = input("Enter Email-id : ")
+            address = input("Enter Address : ")
+            sid = input("Enter Subject Name For Teacher "+tname+" : ")
+            data = (cid,tname,age,experience,d_o_join,d_o_bir,phone,email,address,sid)
+            q = "insert into teacher values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tTEACHER DETAILS ADDED SUCCESSFULLY")
+            print("🦄🐾"*15)
+            print("\n\n")
+        elif ch == 2:
+            q = "select max(cid) from coach"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                cid = 10
+            else:
+                cid = res[0] + 1
+            print("🦄🐾"*15)
+            print("\t\tADDING A NEW COACH TO THE SCHOOL")
+            print("🦄🐾"*15)
+            print("Enter Details for the Coach with id : ",cid)
+            cname = input("Enter Name of The Coach : ")
+            sid = int(input("Enter Sports id For Coach "+cname+" : "))
+            exp = input("Enter Experience (in yrs) : ")
+            phone = input("Enter Phone Number : ")
+            while True:
+                if isPhoneValid(phone):
+                    break
+                else:
+                    print("INVALID PHONE NUMBER")
+                    phone = input("Enter Phone Number : ")
+            email = input("Enter Email-id : ")
+            address = input("Enter Address : ")
+            data = (cid,cname,sid,exp,phone,email,address)
+            q = "insert into COACH values(%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tCOACH DETAILS ADDED SUCCESSFULLY")
+            print("🦄🐾"*21)
+            print("\n")
+        else:
+            break
+
+#Function to display details of all Teacher
+def displayTeacher():
+    while True:
+        print("Press 1 - Show All Teacher Details")
+        print("Press 2 - Show All Coach Details")
+        print("Press 3- to go to the Main Menu")
+        ch = int(input("Enter our Choice : "))
+        if ch == 1:
+            q = "select * from Teacher"
+            cur.execute(q)
+            res = cur.fetchall()
+            print("👀🦚"*15)
+            print("\t\tTEACHER DETAILS")
+            print("👀🦚"*15)
+            print("\n\n")
+            myTable = PrettyTable(["Tid","Name","Age","Experience","D_O_Join","D_O_Bir","Phone","Email","Address","Sub_Name"])
+            for row in res:
+                myTable.add_row(row)
+                print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20,"\n")
+        elif ch == 2:
+            q = "select * from Coach"
+            cur.execute(q)
+            res = cur.fetchall()
+            print("👀🦚"*15)
+            print("\t\tCOACH DETAILS")
+            print("👀🦚"*15)
+            print("\n\n\n\n")
+            myTable = PrettyTable(["Cid","Cname","Sname","Experience","Phone","Email","Address"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n")
+        else:
+            break
+        
+#function to search a particular Teacher
+def searchTeacher():
+    while True:
+        print("Press 1 - Search a Teacher Details")
+        print("Press 2 - Search a Coach Details")
+        print("Press 3- to go to the Main Menu")
+        ch = int(input("Enter our Choice : "))
+        if ch == 1:
+            mid = int(input("Enter Teacher id to be Searched : "))
+            q = "select * from Teacher where tid = "+str(mid)
+            cur.execute(q)
+            res = cur.fetchall()
+            if len(res) == 0:
+                print("No Teacher Details Found")
+                return
+            print("💻📕"*15)
+            print("\t\tTEACHER DETAILS")
+            print("💻📕"*15)
+            myTable = PrettyTable(["Tid","Name","Age","Experience","D_O_Join","D_O_Bir","Phone","Email","Address","Sub_name"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n")
+            print("💻📕"*15)
+        elif ch == 2:
+            mid = int(input("Enter Coach id to be Searched : "))
+            q = "select * from Coach where cid = "+str(mid)
+            cur.execute(q)
+            res = cur.fetchall()
+            if len(res) == 0:
+                print("No Coach Details Found")
+                return
+            print("💻📕"*15)
+            print("\t\tCOACH DETAILS")
+            print("💻📕"*15)
+            myTable = PrettyTable(["Cid","Cname","Sid","Experience","Phone","Email","Address"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n\n\n")
+            print("💻📕"*15)
+        else:
+            break
+        
+#function to delete record of a Teacher
+def deleteTeacher():
+    while True:
+        print("Press 1 - Delete a Teacher Details")
+        print("Press 2 - Delete a Coach Details")
+        print("Press 3- to go to the Main Menu")
+        ch = int(input("Enter our Choice : "))
+        if ch == 1:
+            mid = int(input("Enter Teacher id to be Deleted : "))
+            q = "select * from Teacher where tid = "+str(mid)
+            cur.execute(q)
+            res = cur.fetchall()
+            if len(res) == 0:
+                print("No Teacher Details Found")
+                return
+            print("🎃🎡"*15)
+            print("\t\tTEACHER DETAILS")
+            print("🎃🎡"*15)
+            myTable = PrettyTable(["Tid","Name","Age","Experience","D_O_Join","D_O_Bir","Phone","Email","Address","Sub_name"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            ch = input("Are You Sure You Want To Remove This Teacher From The School (yes/no) : ")
+            if ch.lower() == 'yes':
+                print("🎃🎡"*15)
+                q = "DELETE from TeacHer where tid = "+str(mid)
+                cur.execute(q)
+                con.commit()
+                print("\t\tTEACHER REMOVED")
+                print("🎃🎡"*15)
+        elif ch == 2:
+            mid = int(input("Enter Coach id to be Deleted : "))
+            q = "select * from Coach where cid = "+str(mid)
+            cur.execute(q)
+            res = cur.fetchall()
+            if len(res) == 0:
+                print("No Coach Details Found")
+                return
+            print("🎃🎡"*15)
+            print("\t\tCOACH DETAILS")
+            print("🎃🎡"*15)
+            myTable = PrettyTable(["Cid","Cname","Sid","Experience","Phone","Email","Address"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            ch = input("Are You Sure You Want To Delete The Details Of The Coach Shown Above (yes/no) : ")
+            if ch.lower() == 'yes':
+                print("🎃🎡"*15)
+                q = "DELETE from COACH where cid = "+str(mid)
+                cur.execute(q)
+                con.commit()
+                print("\t\tCOACH DETAILS DELETED")
+                print("🎃🎡"*15)
+        else:
+            break
+
+#function to update a teacher's record
+def updateTeacher():
+    while True:
+        print("Press 1 - Update a Teacher Details")
+        print("Press 2 - Update a Coach Details")
+        print("Press 3- to go to the Main Menu")
+        choi = int(input("Enter our Choice : "))
+        if choi == 1:
+            tid = int(input("Enter Teacher's Id to be Updated : "))
+            q = "select * from teacher where tid= "+str(tid)
+            cur.execute(q)
+            res = cur.fetchall()
+            if len(res) == 0:
+                print("😶😣"*15)
+                print("No Teacher Found with this Id")
+                print("😶😣"*15)
+                print("\n")
+                return
+            print("👩‍💻"*15)
+            print("\t\tTEACHER DETAILS")
+            print("👩‍💻"*15)
+            myTable = PrettyTable(["Tid","Name","Age","Experience","D_O_Join","D_O_Bir","Phone","Email","Address","Sub_name"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n\n\n")
+    
+            print("\tUPDATING TEACHER'S DETAILS")
+            ch = input("Do you want to Update the above shown Records (Y/N) : ")
+            if ch.lower() == 'y':
+                print("Enter New Details for Teacher Havind id : ",tid)
+                sname = input("Enter Updated Name of The Teacher : ")
+                age = int(input("Enter Updated Age of The Teacher : "))
+                exp = int(input("How Many Years of Experience the Teacher is Having : "))
+                d_o_join = input("Enter Updated Date of Joining (yyyy-mm-dd) : ")
+                while True:
+                    if len(d_o_join) == 10 and d_o_join[0:4].isdigit() and d_o_join[4] == '-' and d_o_join[5:7].isdigit() and d_o_join[7] == '-' and d_o_join[8:].isdigit() and int(d_o_join[5:7]) <=12 and int(d_o_join[8:]) <=31:
+                        break
+                    else:
+                        print("Invalid Date....Try Again")
+                        d_o_join = input("Enter Updated Date Joining (yyyy-mm-dd) : ")                
+                d_o_bir = input("Enter Teacher's Updated Date of Birth (yyyy-mm-dd) : ")
+                while True:
+                    if len(d_o_bir) == 10 and d_o_bir[0:4].isdigit() and d_o_bir[4] == '-' and d_o_bir[5:7].isdigit() and d_o_bir[7] == '-' and d_o_bir[8:].isdigit() and int(d_o_bir[5:7]) <=12 and int(d_o_bir[8:]) <=31:
+                        break
+                    else:
+                        print("Invalid Date....Try Again")
+                        d_o_bir = input("Enter Date of Birth (yyyy-mm-dd) again : ")                
+                phone = input("Enter Updated Phone Number : ")
+                while True:
+                    if isPhoneValid(phone):
+                        break
+                    else:
+                        print("INVALID PHONE NUMBER")
+                    phone = input("Enter Phone Number Again : ")                
+                email = input("Enter Teacher's Updated Email-id : ")
+                address = input("Enter Updated Address : ")
+                division = input("Enter the Updated Subject Name for the Teacher : ")
+                data = (sname,age,exp,d_o_join,d_o_bir,phone,email,address,division,tid)
+                q = "update teacher set tname = %s, age = %s,experience = %s, d_o_join = %s, d_o_bir = %s,phone = %s,email = %s,address = %s,subid = %s where tid = %s"
+                cur.execute(q,data)
+                con.commit()
+                print("\tTEACHER DETAILS UPDATED SUCCESSFULLY")
+                print("🦄🐾"*15)
+                print("\n")
+            else:
+                break
+            
+        elif choi == 2:
+            tid = int(input("Enter Coach's Id to be Updated : "))
+            q = "select * from coach where cid= "+str(tid)
+            cur.execute(q)
+            res = cur.fetchall()
+            if len(res) == 0:
+                print("😶😣"*15)
+                print("No Coach Found with this Id")
+                print("😶😣"*15)
+                print("\n")
+                return
+            print("👩‍💻"*15)
+            print("\t\tCOACH DETAILS")
+            print("👩‍💻"*15)
+            myTable = PrettyTable(["Cid","Name","Sport_id","Experience","Phone","Email","Address"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n")
+    
+            print("\tUPDATING COACH'S DETAILS")
+            ch = input("Do you want to Update the above shown Records (Y/N) : ")
+            if ch.lower() == 'y':
+                print("Enter New Details for Coach Havind id : ",tid)
+                sname = input("Enter Updated Name of The Coach : ")
+                age = int(input("Enter Updated Age of The Coach : "))
+                sid = int(input("Enter Sports Id : "))
+                exp = int(input("How Many Years of Experience the Teacher is Having : "))
+                phone = input("Enter Updated Phone Number : ")
+                while True:
+                    if isPhoneValid(phone):
+                        break
+                    else:
+                        print("INVALID PHONE NUMBER")
+                        phone = input("Enter Phone Number Again : ")                
+                email = input("Enter Teacher's Updated Email-id : ")
+                address = input("Enter Updated Address : ")
+                data = (sname,sid,exp,phone,email,address,tid)
+                q = "update coach set cname = %s, sid = %s,experience = %s,phone = %s,email = %s,address = %s where cid = %s"
+                cur.execute(q,data)
+                con.commit()
+                print("\tTEACHER DETAILS UPDATED SUCCESSFULLY")
+                print("🦄🐾"*15)
+                print("\n")
+            else:
+                break
+            
+#function to show teacher's subject expertise
+def subExpertise():
+    while True:
+        print("Press 1 - See Teacher's Expertise")
+        print("Press 2 - See Coach's Expertise")
+        print("Press 3- to go to the Main Menu")
+        choi = int(input("Enter our Choice : "))
+        if choi == 1:
+            q = "select tname,phone,subid from Teacher"
+            cur.execute(q)
+            res = cur.fetchall()
+            print("👀🦚"*15)
+            print("\t\tTEACHER DETAILS")
+            print("👀🦚"*15)
+            print("\n\n\n\n")
+            myTable = PrettyTable(["Name","Phone","Sub_Expertise"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n")
+        elif choi == 2:
+            q = "select cname,phone,cid from coach"
+            cur.execute(q)
+            res = cur.fetchall()
+            print("👀🦚"*15)
+            print("\t\tCOACH DETAILS")
+            print("👀🦚"*15)
+            print("\n\n\n\n")
+            myTable = PrettyTable(["Name","Phone","Sub_Id"])
+            for row in res:
+                myTable.add_row(row)
+            print("☆❁"*20)
+            print(myTable)
+            print("☆❁"*20)
+            print("\n")
+        else:
+            break
+        
+
+#Function to manage records of teachers 
+def manage_teachers():
+    while True:
+        print("\n")
+        print("🌌🌕"*15)
+        print("\t\t 1 -- add a new teacher ☆")
+        print("\t\t 2 -- display all teacher details ☆")
+        print("\t\t 3 -- search a teacher ☆")
+        print("\t\t 4 -- remove a teacher ☆")
+        print("\t\t 5 -- update a teacher details ☆")
+        print("\t\t 6 -- see tacher's subject expertise ☆")
+        print("\t\t 7 -- go back to main menu ☆")
+        print("🌌🌕"*15)
+        print("\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addTeacher()
+        elif ch == 2:
+            displayTeacher()
+        elif ch == 3:
+            searchTeacher()
+        elif ch == 4:
+            deleteTeacher()
+        elif ch == 5:
+            updateTeacher()
+        elif ch == 6:
+            subExpertise()
+        elif ch == 7:
+            break
+        else:
+            print("Invalid Digit Pressed")
+            print("\n")
+
+#function to take attendance
+def takeAttendance():
+    print("☆❁"*17)
+    admno = int(input("Enter Student's Admission Number : "))
+    m_name = input("Enter Month Name (January,February, and so on) : ")
+    day = int(input("Enter Number of Working Days : "))
+    p_day = int(input("Enter Number of Days Student was Present : "))
+    print("☆❁"*17,"\n")
+    q = "SELECT sname from student where admno = "+str(admno)
+    data = (admno)
+    cur.execute(q,data)
+    res = cur.fetchone()
+    if res == None:
+        print("\n","🎒💻"*15)
+        print("No Student with this Admission Number Found")
+        print("🎒💻"*15,"\n")
+        return None
+    q = 'insert into attendance values(%s,%s,%s,%s)'
+    data = [admno,m_name,day,p_day]
+    cur.execute(q,data)
+    print("\n","📝📝"*15)
+    print(res[0],"'s Attendance Saved !!")
+    con.commit()
+
+#Function to show all attendance details
+def show_attendance():
+    q = "select * from attendance"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀🦚"*15)
+    print("\t\tATTENDANCE DETAILS")
+    print("👀🦚"*15)
+    print("\n\n")
+    myTable = PrettyTable(["ADMNO","MONTH","WORKING_DAYS","PRESENT_DAYS"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*17)
+    print(myTable)
+    print("☆❁"*17)
+    print("\n\n")
+
+#Function to delete an attendance record
+def deleteAttendance():
+    admno = int(input("Enter Admission Number of the Student Whose Attendance has to be Deleted : "))
+    month = input("Enter Month Name(January,February and so on) : ")
+    q = "select * from Attendance where admno = %s and month like %s "
+    data = (admno,month)
+    cur.execute(q,data)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Attendance Details Found")
+        return
+    print("\n","🎃🎡"*15)
+    print("\t\tATTENDANCE DETAILS")
+    print("🎃🎡"*15,"\n")
+    myTable = PrettyTable(["ADMNO","MONTH","WORKING_DAYS","PRESENT_DAYS"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20,"\n")
+    ch = input("Are You Sure You Want To Remove This Detail From The Attendance Table(yes/no) : ")
+    if ch.lower() == 'yes':
+        print("\n","🎃🎡"*15)
+        q = "DELETE from ATTENDANCE where ADMNO = %s and month like %s"
+        data = (admno,month)
+        cur.execute(q,data)
+        con.commit()
+        print("\t\tATTENDANCE DETAILS REMOVED")
+        print("🎃🎡"*15)
+
+#FUNCTION TO SEARCH ATTENDANCE RECORD
+def searchAttendance():
+    mid = int(input("Enter Admission Number to be Searched : "))
+    q = "select * from ATTENDANCE where ADMNO = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Attendance Details Found")
+        return
+    print("💻📕"*15)
+    print("\t\tATTENDANCE DETAILS")
+    print("💻📕"*15)
+    myTable = PrettyTable(["ADMNO","MONTH","WORKING_DAYS","PRESENT_DAYS"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n")
+    print("💻📕"*15)
+
+
+#FUNCTION TO MANAGE ATTENDANCE
+def manage_attendance():
+    while True:
+        print("\n")
+        print("✒📖"*15)
+        print("\t\t 1 -- see all attendance details ☆")
+        print("\t\t 2 -- delete an attendance record ☆")
+        print("\t\t 3 -- search an attendance record ☆")
+        print("\t\t 4 -- take attendance ☆")
+        print("\t\t 5 -- go back to main menu ☆")
+        print("✒📖"*15)
+        print("\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            show_attendance()
+        elif ch == 2:
+            deleteAttendance()
+        elif ch == 3:
+            searchAttendance()
+        elif ch == 4:
+            takeAttendance()
+        elif ch == 5:
+            break
+        else:
+            print("Invalid Digit Pressed","\n")
+#Function to show all class details
+def showClass():
+    q = "select * from classes"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("🚸🛎"*15)
+    print("\t\tCLASS DETAILS")
+    print("👀🦚"*15)
+    print("\n\n")
+    myTable = PrettyTable(["division","section","no_o_stu","location","class_teacher"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*17)
+    print(myTable)
+    print("☆❁"*17)
+    print("\n")
+
+#Function to add a new class to the school
+def addClass():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tADDING A NEW CLASS")
+    print("🏛🏫"*15)
+    print("\n")
+    divi = input("Enter Division(NSC,LKG,1,2,etc) : ")
+    section = input("Enter Section Name (A,B,C,etc): ")
+    stu = int(input("Enter Max Number of Students Allowed in the Class : "))
+    location = input("Enter Where the Class is Located (1st floor, ground floor,etc) : ")
+    class_teacher = input("Enter Class Teacher's Name : ")
+    q = 'select tname from teacher where tname like "'+class_teacher+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("NO TEACHER NAMED "+class_teacher+" IS CURRENTLY THERE IN THE SCHOOL")
+        return
+    q = 'insert into classes values (%s,%s,%s,%s,%s)'
+    data = [divi,section,stu,location,class_teacher]
+    cur.execute(q,data)
+    con.commit()
+    print("🦄🐾"*15)
+    print("\tCLASS DETAILS ADDED SUCCESSFULLY")
+    print("🦄🐾"*15)
+    print("\n\n")
+
+#Function to update class details
+def updateClass():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tUPDATING A NEW CLASS")
+    print("🏛🏫"*15)
+    print("\n")
+    name = input("Enter Class Teacher's Name Whose Class Records has to be Updated : ")
+    q = 'select division,section,no_o_stu,location from classes where class_teacher like "'+name+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("\nNO SUCH CLASS FOUND WHOSE CLASS TEACHER IS : ",name,"\n")
+        return
+    print("HERE IS THE CLASS DETAILS FOR ",name,"'s CLASS")
+    myTable = PrettyTable(["division","section","no_o_stu","location"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Do you want to Update the Records (Y/N) : ")
+    if ch.lower() == 'y':
+        divi = input("Enter the Updated Division(NSC,LKG,1,2,etc) : ")
+        section = input("Enter the Updated Section Name (A,B,C,etc): ")
+        stu = int(input("Enter the Updated Number of Students Allowed in the Class : "))
+        location = input("Enter the Updated Location of the Class (1st floor, ground floor,etc) : ")
+        class_teacher = input("Enter the Updated Class Teacher's Name : ")
+        q = 'select tname from teacher where tname like "'+class_teacher+'"'
+        cur.execute(q)
+        res = cur.fetchall()
+        if len(res) == 0:
+            print("NO TEACHER NAMED "+class_teacher+" IS CURRENTLY THERE IN THE SCHOOL")
+            return
+        q = ' update classes set division = %s, section = %s, no_o_stu = %s, location = %s, class_teacher = %s where class_teacher like %s'
+        data = [divi,section,stu,location,class_teacher,name]
+        cur.execute(q,data)
+        con.commit()
+        print("\n","🦄🐾"*15)
+        print("\tCLASS DETAILS UPDATED SUCCESSFULLY")
+        print("🦄🐾"*15)
+        print("\n")
+        
+#Function to search a class details
+def searchClass():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tSEARCHING A CLASS")
+    print("🏛🏫"*15)
+    print("\n")
+    name = input("Enter Class Teacher's Name Whose Class Records has to be Searched : ")
+    q = 'select division,section,no_o_stu,location from classes where class_teacher like "'+name+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("\nNO SUCH CLASS FOUND WHOSE CLASS TEACHER IS : ",name,"\n")
+        return
+    print("HERE IS THE CLASS DETAILS FOR ",name,"'s CLASS")
+    myTable = PrettyTable(["division","section","no_o_stu","location"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+
+#function to delete a class details
+def deleteClass():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tDELETING A CLASS")
+    print("🏛🏫"*15)
+    print("\n")
+    name = input("Enter Class Teacher's Name Whose Class Records has to be Deleted : ")
+    q = 'select division,section,no_o_stu,location from classes where class_teacher like "'+name+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Such Class Details Found")
+        return
+    print("\n","🎃🎡"*15)
+    print("\t\tCLASS DETAILS")
+    print("🎃🎡"*15,"\n")
+    myTable = PrettyTable(["division","section","no_o_stu","location"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20,"\n")
+    ch = input("Are You Sure You Want To Remove This Class From This School(yes/no) : ")
+    if ch.lower() == 'yes':
+        print("\n","🎃🎡"*15)
+        q = "DELETE from classes where class_teacher like '"+name+"'"
+        cur.execute(q)
+        con.commit()
+        print("\t\tCLASS DELETED ")
+        print("🎃🎡"*15)
+
+#Function to manage classes
+def manage_classes():
+    while True:
+        print("\n")
+        print("🚸🛎"*15)
+        print("\t\t 1 -- show all available classes ☆")
+        print("\t\t 2 -- add a class to the school ☆")
+        print("\t\t 3 -- update a class details ☆")
+        print("\t\t 4 -- to delete a class details ☆")
+        print("\t\t 5 -- to search for a class ☆")
+        print("\t\t 6 -- go back to main menu ☆")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            showClass()
+        elif ch == 2:
+            addClass()
+        elif ch == 3:
+            updateClass()
+        elif ch == 4:
+            deleteClass()
+        elif ch == 5:
+            searchClass()
+        elif ch == 6:
+            break
+        else:
+            print("Invalid Digit Presses","\n")
+
+#function to add a new staff to the school
+def addStaff():
+    while True:
+        print("\n")
+        print("📖✏"*15)
+        print("Press 1 - Add a New Staff")
+        print("Press 2- to go to the Main Menu")
+        print("📖✏"*15)
+        print("\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            q = "select max(sid) from staff"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                sid = 500
+            else:
+                sid = res[0] + 1
+            print("\n")
+            print("🧹🧹"*15)
+            print("\t\tADDING A NEW STAFF")
+            print("🧹🧹"*15)
+            print("\n")
+            print("Enter Details for Staff with Id : ",sid)
+            sname = input("Enter Name of The Staff : ")
+            gender = input("Enter Staff's Gender (Male/Female) : ")
+            units = input("Enter Alloted Unit for the Staff ('peon','librarian','sweeper','cashier',etc) : ")
+            salary = int(input("Enter Staff's Salary : "))
+            working_hour = int(input("Enter Working Hour for the Staff : "))
+            age = int(input("Enter Staff's Age : "))
+            address = input("Enter Staff's Address : ")
+            phone = input("Enter Mobile Number : ")
+            while True:
+                if isPhoneValid(phone):
+                    break
+                else:
+                    print("INVALID PHONE NUMBER")
+                    phone = input("Enter Phone Number : ")
+            d_o_join = input("Enter Date of Joining (yyyy-mm-dd) : ")
+            while True:
+                if len(d_o_join) == 10 and d_o_join[0:4].isdigit() and d_o_join[4] == '-' and d_o_join[5:7].isdigit() and d_o_join[7] == '-' and d_o_join[8:].isdigit() and int(d_o_join[5:7]) <=12 and int(d_o_join[8:]) <=31:
+                    break
+                else:
+                    print("Invalid Date....Try Again")
+                    doj = input("Enter Date of Joining (yyyy-mm-dd) : ")
+                    
+            data = [sid,sname,gender,units,salary,working_hour,age,address,phone,d_o_join]
+            q = "insert into staff values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tSTAFF ADDED SUCCESSFULLY")
+            print("🧹🧹"*15)
+            print("\n\n")
+        else:
+            break
+
+#Function to display details of all Staff
+def showStaff():
+    q = "select * from Staff"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀🦚"*15)
+    print("\t\tSTAFF DETAILS")
+    print("👀🦚"*15)
+    print("\n")
+    myTable = PrettyTable(["Sid","Sname","Gender","Units","SAlary","Working_hr","Age","Address","Phone","D_O_Join"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+
+#function to search a particular staff
+def searchStaff():
+    mid = int(input("Enter Staff id to be Searched : "))
+    q = "select * from Staff where sid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Staff Details Found")
+        return
+    print("💻📕"*15)
+    print("\t\tSTAFF DETAILS")
+    print("💻📕"*15)
+    myTable = PrettyTable(["Sid","Sname","Gender","Units","SAlary","Working_hr","Age","Address","Phone","D_O_Join"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+    print("💻📕"*15)
+
+#function to delete record of a STaff
+def removeStaff():
+    mid = int(input("Enter Staff id to be Deleted : "))
+    q = "select * from Staff where sid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Staff Details Found")
+        return
+    print("🎃🎡"*15)
+    print("\t\tSTAFF DETAILS")
+    print("🎃🎡"*15)
+    myTable = PrettyTable(["Sid","Sname","Gender","Units","SAlary","Working_hr","Age","Address","Phone","D_O_Join"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Are You Sure You Want To Remove This Staff From The School (yes/no) : ")
+    if ch.lower() == 'yes':
+        print("🎃🎡"*15)
+        q = "DELETE from STAFF where tid = "+str(mid)
+        cur.execute(q)
+        con.commit()
+        print("\t\tSTAFF REMOVED")
+        print("🎃🎡"*15)
+
+#FUNCTION TO UPDATE A STAFF DETAILS      
+def updateStaff():
+    sid = int(input("Enter Staff's Id to be Updated : "))
+    q = "select * from staff where sid= "+str(tid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("😶😣"*15)
+        print("No Staff Found with this Id")
+        print("😶😣"*15)
+        print("\n")
+        return
+    print("👩‍💻"*15)
+    print("\t\tSTAFF DETAILS")
+    print("👩‍💻"*15)
+    myTable = PrettyTable(["Sid","Sname","Gender","Units","SAlary","Working_hr","Age","Address","Phone","D_O_Join"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+    print("\tUPDATING STAFF'S DETAILS")
+    ch = input("Do you want to Update the above shown Records (Y/N) : ")
+    if ch.lower() == 'y':
+        print("Enter New Details for Staff Havind id : ",sid)
+        sname = input("Enter Updated Name of The Staff : ")
+        gender = input("Enter Staff's Gender (Male/Female) : ")
+        units = input("Enter Alloted Unit for the Staff ('peon','librarian','sweeper','cashier',etc) : ")
+        salary = int(input("Enter Staff's Updated Salary : "))
+        working_hour = int(input("Enter Working Hour for the Staff : "))
+        age = int(input("Enter Staff's Age : "))
+        address = input("Enter Staff's Address : ")
+        phone = input("Enter Mobile Number : ")
+        while True:
+            if isPhoneValid(phone):
+                break
+            else:
+                print("INVALID PHONE NUMBER")
+                phone = input("Enter Phone Number : ")
+        d_o_join = input("Enter Date of Joining (yyyy-mm-dd) : ")
+        while True:
+            if len(d_o_join) == 10 and d_o_join[0:4].isdigit() and d_o_join[4] == '-' and d_o_join[5:7].isdigit() and d_o_join[7] == '-' and d_o_join[8:].isdigit() and int(d_o_join[5:7]) <=12 and int(d_o_join[8:]) <=31:
+                break
+            else:
+                print("Invalid Date....Try Again")
+                doj = input("Enter Date of Joining (yyyy-mm-dd) : ")                
+        data = [sname,gender,units,salary,working_hour,age,address,phone,d_o_join,sid]
+        q = "update staff set sname = %s,gender = %s,units = %s,salary = %s,working_Hour = %s, age = %s,address = %s,mobile = %s, d_o_join = %s where sid = %s"
+        cur.execute(q,data)
+        con.commit()
+        print("\tSTAFF RECORDS UPDATED SUCCESSFULLY")
+        print("🦄🐾"*15)
+        print("\n")
+        
+#Function to manage staff deatils
+def manage_staffMembers():
+    while True:
+        print("\n")
+        print("🚸🛎"*15)
+        print("\t\t 1 -- add a staff to the school ☆")
+        print("\t\t 2 -- show all available staff ☆")
+        print("\t\t 3 -- update staff's details ☆")
+        print("\t\t 4 -- to remove a staff ☆")
+        print("\t\t 5 -- to search for a staff ☆")
+        print("\t\t 6 -- go back to main menu ☆")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addStaff()
+        elif ch == 2:
+            showStaff()
+        elif ch == 3:
+            updateStaff()
+        elif ch == 4:
+            removeStaff()
+        elif ch == 5:
+            searchStaff()
+        elif ch == 6:
+            break
+        else:
+            print("Invalid Digit Presses","\n")
+
+#function to add a fee record
+def addFee():
+    print("\n")
+    print("💶💰"*15)
+    print("\t\tSUBMITTING FEE")
+    print("💶💰"*15)
+    print("\n")
+    admno = int(input("Enter Admission Number : "))
+    month = input("Enter Month Name : ")
+    fee = int(input("Enter Fee Amount : "))
+    cashier_name = input("Enter Cashier Name : ")
+    q = 'select sname from staff where sname like "'+cashier_name+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("NO CASHIER NAMED "+cashier_name+" IS CURRENTLY THERE IN THE SCHOOL")
+        return
+    q = 'select admno from student where admno like "'+str(admno)+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("NO STUDENT HAVING ADMNO "+str(admno)+" IS CURRENTLY THERE IN THE SCHOOL")
+        return
+    q = 'insert into fees values (%s,%s,%s,%s)'
+    data = [admno,month,fee,cashier_name]
+    cur.execute(q,data)
+    con.commit()
+    print("🦄🐾"*15)
+    print("\tFEE SUBMITTED SUCCESSFULLY")
+    print("🦄🐾"*15)
+    print("\n\n")
+
+#FUNCTION TO SHOW ALL FEE DETAILS
+def showFee():
+    q = "select f.admno,sname,month,fee,cashier_name,phone from fees f, student s where f.admno = s.admno"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀💶"*15)
+    print("\t\tFEE DETAILS")
+    print("👀💶"*15)
+    print("\n")
+    myTable = PrettyTable(["AdmNO","S_Name","Month","Fee","Casier_Name","Phone"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+
+#function to update fee details
+def updateFee():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tUPDATING FEE RECORDS")
+    print("🏛🏫"*15)
+    print("\n")
+    name = input("Enter Admission Number Whose Fee Records has to be Updated : ")
+    month1 = input("Enter Month Name : ")
+    q = 'select * from fees where admno like "'+name+'" and month like "'+month1+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("\nNO SUCH FEE RECORD FOUND\n")
+        return
+    print("HERE IS THE FEE RECORD FOR STUDENT HAVING ADMNO ",name)
+    myTable = PrettyTable(["Admno","Month","Fee","Cashier_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Do you want to Update the Records (Y/N) : ")
+    if ch.lower() == 'y':
+        admno = int(input("Enter Updated Admission Number : "))
+        month = input("Enter Updated Month Name : ")
+        fee = int(input("Enter Updated Fee Amount : "))
+        cashier_name = input("Enter Updated Cashier Name : ")
+        q = 'select sname from staff where sname like "'+cashier_name+'"'
+        cur.execute(q)
+        res = cur.fetchall()
+        if len(res) == 0:
+            print("NO CASHIER NAMED "+cashier_name+" IS CURRENTLY THERE IN THE SCHOOL")
+            return
+        q = 'select admno from student where admno like "'+str(admno)+'"'
+        cur.execute(q)
+        res = cur.fetchall()
+        if len(res) == 0:
+            print("NO STUDENT HAVING ADMNO "+str(admno)+" IS CURRENTLY THERE IN THE SCHOOL")
+            return
+        q = ' update fees set admno = %s, month = %s, fee = %s, CASHIER_NAME = %s where admno like %s and month like %s'
+        data = [admno,month,fee,cashier_name,name,month1]
+        cur.execute(q,data)
+        con.commit()
+        print("\n","🦄🐾"*15)
+        print("\tFEE RECORDS UPDATED SUCCESSFULLY")
+        print("🦄🐾"*15)
+        print("\n")
+
+# function to remove a fee record
+def removeFee():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tDELETING A FEE RECORD")
+    print("🏛🏫"*15)
+    print("\n")
+    name = input("Enter Admission Number Whose Fee Records has to be Deleted : ")
+    month1 = input("Enter Month Name : ")
+    q = 'select * from fees where admno like "'+name+'" and month like "'+month1+'"'
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("\nNO SUCH FEE RECORD FOUND\n")
+        return
+    print("HERE IS THE FEE RECORD FOR STUDENT HAVING ADMNO ",name)
+    myTable = PrettyTable(["Admno","Month","Fee","Cashier_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Are You Sure You Want To Remove This Fee Record From The Register(yes/no) : ")
+    if ch.lower() == 'yes':
+        print("\n","🎃🎡"*15)
+        q = "DELETE from fees where admno like '"+name+"' and month like '"+month1+"'"
+        cur.execute(q)
+        con.commit()
+        print("\t\tFEE RECORD DELETED ")
+        print("🎃🎡"*15)
+
+#function to search fee details
+def searchFee():
+    print("\n")
+    print("🏛🏫"*15)
+    print("\t\tSEARCHING A FEE RECORD")
+    print("🏛🏫"*15)
+    print("\n")
+    name = input("Enter Admission Number Whose Fee Records has to be Searched : ")
+    month1 = input("Enter Month Name : ")
+    data = (name,month1)
+    q = "select f.admno,sname,month,fee,cashier_name,phone from fees f, student s where s.admno = %s and month = %s"
+    cur.execute(q,data)
+    res = cur.fetchall()
+    print("👀💶"*15)
+    print("\t\tFEE DETAILS")
+    print("👀💶"*15)
+    print("\n")
+    myTable = PrettyTable(["AdmNO","S_Name","Month","Fee","Casier_Name","Phone"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+    
+#function to manage fees
+def manage_fee():
+    while True:
+        print("\n")
+        print("🚸🛎"*15)
+        print("\t\t 1 -- add a new fee record ☆")
+        print("\t\t 2 -- show all fee details ☆")
+        print("\t\t 3 -- update fee details ☆")
+        print("\t\t 4 -- remove a fee record ☆")
+        print("\t\t 5 -- search for a fee record ☆")
+        print("\t\t 6 -- go back to main menu ☆")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addFee()
+        elif ch == 2:
+            showFee()
+        elif ch == 3:
+            updateFee()
+        elif ch == 4:
+            removeFee()
+        elif ch == 5:
+            searchFee()
+        elif ch == 6:
+            break
+        else:
+            print("Invalid Digit Presses","\n")
+
+#function to add a batch details
+def addBatch():
+    while True:
+        print("\n","📖✏"*15)
+        print("Press 1 - Add a Batch Details")
+        print("Press 2- to go to the Main Menu")
+        print("📖✏"*15,"\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            q = "select max(bid) from batches"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                bid = 1000
+            else:
+                bid = res[0] + 1
+            print("\n","🦄🐾"*15)
+            print("\t\tADDING A NEW BATCH TO THE SCHOOL")
+            print("🦄🐾"*15,"\n")
+            print("Enter Details for the Batch with id : ",bid)
+            cname = input("Enter Name of The Batch : ")
+            days = input("Enter Days : ")
+            time = input("Enter Time : ")
+            cid = input("Enter Coach id : ")
+            fees = int(input("Enter Fees : " ))
+            
+            data = (bid,cname,days,time,cid,fees)
+            q = "insert into batches values(%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tBATCH DETAILS ADDED SUCCESSFULLY")
+            print("🦄🐾"*21)
+            print("\n\n\n\n")
+        else:
+            break
+#Function to display details of all batches
+def displayBatch():
+    q = "select * from batches"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀🦚"*15)
+    print("\t\tBATCH DETAILS")
+    print("👀🦚"*15)
+    print("\n\n\n\n")
+    myTable = PrettyTable(["Bid","Bname","Days","Btime","Cid","Fees"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n\n")
+
+#function to search a particular batch
+def searchBatch():
+    mid = int(input("Enter Batch id to be Searched : "))
+    q = "select * from batches where bid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Batch Details Found")
+        return
+    print("💻📕"*15)
+    print("\t\tBATCH DETAILS")
+    print("💻📕"*15)
+    myTable = PrettyTable(["Bid","Bname","Days","Btime","Cid","Fees"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n")
+    print("💻📕"*15)
+
+#function to delete record of a batch
+def deleteBatch():
+    mid = int(input("Enter Batch id to be Deleted : "))
+    q = "select * from Batches where bid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Batch Details Found")
+        return
+    print("🎃🎡"*15)
+    print("\t\tBATCH DETAILS")
+    print("🎃🎡"*15)
+    myTable = PrettyTable(["Bid","Bname","Days","Btime","Cid","Fees"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Are You Sure You Want To Delete The Details Of The Batch Shown Above (yes/no) : ")
+    if ch.lower() == 'yes':
+        print("🎃🎡"*15)
+        q = "DELETE from BATCH where bid = "+str(mid)
+        cur.execute(q)
+        con.commit()
+        print("\t\tBATCH DETAILS DELETED")
+        print("🎃🎡"*15)
+
+#Function to manage records of batches
+def manage_batches():
+    while True:
+        print("🌌🌕"*15)
+        print("\t\t 1 -- add a new batch")
+        print("\t\t 2 -- display all batch details")
+        print("\t\t 3 -- search a batch")
+        print("\t\t 4 -- delete a batch")
+        print("\t\t5 -- go back to main menu")
+        print("🌌🌕"*15)
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addBatch()
+        elif ch == 2:
+            displayBatch()
+        elif ch == 3:
+            searchBatch()
+        elif ch == 4:
+            deleteBatch()
+        elif ch == 5:
+            break
+        else:
+            print("Invalid Digit Pressed")
+            print("\n")
+
+#function to add a sport
+def addSport():
+    while True:
+        print("📖✏"*15)
+        print("Press 1 - Add a Sport")
+        print("Press 2- to go to the Main Menu")
+        print("📖✏"*15)
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            q = "select max(sid) from sports"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                sid = 10
+            else:
+                sid = res[0] + 1
+            print("\t\tADDING A NEW SPORT")
+            print("🦄🐾"*15,"\n")
+            print("Enter Details for the Sport having sid : ",sid)
+            sname = input("Enter Name of The Sport : ")
+            category = input("Enter Category of the Sport (INDOOR / OUTDOOR) : ")
+            fees = int(input("Enter Fees Per Month : "))
+            equipment = input("Enter Equipments Required For "+sname+" : ")
+            data = (sid,sname,category,fees,equipment)
+            q = "insert into sports values(%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tSPORTS DETAILS ADDED SUCCESSFULLY")
+            print("🦄🐾"*21)
+            print("\n")
+        else:
+            break
+
+#Function to display details of all SPORTS
+def displaySport():
+    q = "select * from sports"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀🦚"*15)
+    print("\t\tSPORTS DETAILS")
+    print("👀🦚"*15)
+    print("\n")
+    myTable = PrettyTable(["Sid","Sname","Category","Fees","Equipments"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+
+#function to search a particular sport
+def searchSport():
+    mid = int(input("Enter Sport id to be Searched : "))
+    q = "select * from sports where sid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Sport Details Found")
+        return
+    print("💻📕"*15)
+    print("\t\tSPORT DETAILS")
+    print("💻📕"*15)
+    myTable = PrettyTable(["Sid","Sname","Category","Fees","Equipments"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+    print("💻📕"*15)
+
+#function to delete record of a sport
+def deleteSport():
+    mid = int(input("Enter Sport id to be Deleted : "))
+    q = "select * from sports where sid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Sport Details Found")
+        return
+    print("🎃🎡"*15)
+    print("\t\tSPORT DETAILS")
+    print("🎃🎡"*15)
+    myTable = PrettyTable(["Sid","Sname","Category","Fees","Equipments"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Are You Sure You Want To Delete The Details Of The Sport Shown Above (yes/no) : ")
+    if ch.lower() == 'yes':
+        print("🎃🎡"*15)
+        q = "DELETE from SPORTS where sid = "+str(mid)
+        cur.execute(q)
+        con.commit()
+        print("\t\tSPORTS DETAILS DELETED")
+        print("🎃🎡"*15)
+        
+#Function to manage records of sports 
+def manage_sports():
+    while True:
+        print("🌌🌕"*15)
+        print("\t\t 1 -- add a new sport")
+        print("\t\t 2 -- display all sport details")
+        print("\t\t 3 -- search a sport")
+        print("\t\t 4 -- delete a sport")
+        print("\t\t 5 -- go back to main menu")
+        print("🌌🌕"*15)
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addSport()
+        elif ch == 2:
+            displaySport()
+        elif ch == 3:
+            searchSport()
+        elif ch == 4:
+            deleteSport()
+        elif ch == 5:
+            break
+        else:
+            print("Invalid Digit Pressed")
+            print("\n")
+
+
+#function to add a member
+def addMember():
+    while True:
+        print("📖✏"*15)
+        print("Press 1 - Add a New Member")
+        print("Press 2- to go to the Main Menu")
+        print("📖✏"*15)
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            q = "select max(mid) from MeMber"
+            cur.execute(q)
+            res = cur.fetchone()
+            if res[0] == None:
+                mid = 11
+            else:
+                mid = res[0] + 1
+            print("🦄🐾"*15)
+            print("\t\tADDING A NEW MEMBER")
+            print("🦄🐾"*15)
+            print("Enter Details for Member Id : ",mid)
+            mname = input("Enter Name of The Member : ")
+            age = int(input("Enter Age of The Member : "))
+            doj = input("Enter Date of Joining (yyyy-mm-dd) : ")
+            while True:
+                if len(doj) == 10 and doj[0:4].isdigit() and doj[4] == '-' and doj[5:7].isdigit() and doj[7] == '-' and doj[8:].isdigit() and int(doj[5:7]) <=12 and int(doj[8:]) <=31:
+                    break
+                else:
+                    print("Invalid Date....Try Again")
+                    doj = input("Enter Date of Joining (yyyy-mm-dd) : ")
+             
+            phone = input("Enter Phone Number : ")
+            while True:
+                if isPhoneValid(phone):
+                    break
+                else:
+                    print("INVALID PHONE NUMBER")
+                    phone = input("Enter Phone Number : ")
+            email = input("Enter Email-id : ")
+            address = input("Enter Address : ")
+            mtype = input("Enter Membership Type (Monthly / Quaterly / Yearly ) : ")
+            data = (mid,mname,age,doj,phone,email,address,mtype)
+            q = "insert into member values(%s,%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tMEMBER ADDED SUCCESSFULLY")
+            print("🦄🐾"*21)
+            print("\n\n\n\n")
+        else:
+            break
+
+#Function to display details of all members
+def displayMember():
+    q = "select * from member"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀🦚"*15)
+    print("\t\tMEMBER DETAILS")
+    print("👀🦚"*15)
+    print("\n\n\n\n")
+    myTable = PrettyTable(["Mid","Mname","Age","D_O_J","Phone","Email","Address","Mtype"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n\n")
+
+#function to search a particular member
+def searchMember():
+    mid = int(input("Enter Member id to be Searched : "))
+    q = "select * from member where mid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Member Found")
+        return
+    print("💻📕"*15)
+    print("\t\tMEMBER DETAILS")
+    print("💻📕"*15)
+    myTable = PrettyTable(["Mid","Mname","Age","D_O_J","Phone","Email","Address","Mtype"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n\n\n")
+    print("💻📕"*15)
+
+#function to delete record of a member
+def deleteMember():
+    mid = int(input("Enter Member id to be Deleted : "))
+    q = "select * from member where mid = "+str(mid)
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("No Member Found")
+        return
+    print("🎃🎡"*15)
+    print("\t\tMEMBER DETAILS")
+    print("🎃🎡"*15)
+    myTable = PrettyTable(["Mid","Mname","Age","D_O_J","Phone","Email","Address","Mtype"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    ch = input("Are You Sure You Want To Delete The Details Of The Member Shown Above (yes/no) : ")
+    if ch.lower() == 'yes':
+        print("🎃🎡"*15)
+        q = "DELETE from member where mid = "+str(mid)
+        cur.execute(q)
+        con.commit()
+        print("\t\tMEMBER DETAILS DELETED")
+        print("🎃🎡"*15)
+
+#Function to manage records of members   
+def manage_members():
+    while True:
+        print("🌌🌕"*15)
+        print("\t\t 1 -- add a new member")
+        print("\t\t 2 -- display all members")
+        print("\t\t 3 -- search a member")
+        print("\t\t 4 -- delete a member")
+        print("\t\t 5 -- go back to main menu")
+        print("🌌🌕"*15)
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addMember()
+        elif ch == 2:
+            displayMember()
+        elif ch == 3:
+            searchMember()
+        elif ch == 4:
+            deleteMember()
+        elif ch == 5:
+            break
+        else:
+            print("Invalid Digit Pressed")
+            print("\n")
+
+#function to enroll a member
+def enroll_member():
+    mid = input("Enter Member Id : ")
+    bid = input("Enter Batch Id : ")
+    q = "insert into enrollments values(%s,%s)"
+    data = (bid,mid)
+    cur.execute(q,data)
+    con.commit()
+    print("ENROLLED......!!!")
+
+#function to show all enrollments
+def show_enrollments():
+    q = "select mname,bname,cname from enrollments,member,batches,coach where member.mid = enrollments.mid and batches.bid = enrollments.bid and batches.cid = coach.cid"
+    cur.execute(q)
+    res = cur.fetchall()
+    myTable = PrettyTable(["M_Name","B_Name","C_Name"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+
+#function to add a Trip
+def addTrip():
+    while True:
+        print("\n","📖✏"*15)
+        print("Press 1 - Add a Trip")
+        print("Press 2- to go to the Main Menu")
+        print("📖✏"*15,"\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            print("\t\tADDING A NEW TRIP")
+            print("🦄🐾"*15,"\n")
+            dest = input("Enter the Final Destination of This Trip : ")
+            d_o_dest = input("Enter the Date of the First Day for the Trip (yyyy-mm-dd) : ")
+            inc = input("Enter incharge Name of This Trip : ")
+            dur = int(input("Enter Number of Days for the Trip : "))
+            div = int(input("Enter for Which Class this Trip was : "))
+            charges = int(input("Enter Charge per Student : "))
+            no_o_stu = int(input("Enter Number of Students who Enjoyed the Trip : "))
+            data = (dest, d_o_dest, inc, dur, div, charges, no_o_stu)
+            q = "insert into school_trip values(%s,%s,%s,%s,%s,%s,%s)"
+            cur.execute(q,data)
+            con.commit()
+            print("\tTRIP DETAILS ADDED SUCCESSFULLY")
+            print("🦄🐾"*21)
+            print("\n")
+        else:
+            break
+
+#Function to display details of all Trip
+def displayTrip():
+    q = "select * from SCHOOL_Trip"
+    cur.execute(q)
+    res = cur.fetchall()
+    print("👀🦚"*15)
+    print("\t\tTRIP DETAILS")
+    print("👀🦚"*15)
+    print("\n")
+    myTable = PrettyTable(["Destination","D_O_Destination","Incharge","No_o_Days","Class","Charges","No_o_Stu"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+
+#function to search a particular Trip
+def searchTrip():
+    dest = input("Enter Destination Name for the Trip to be Searched : ")
+    q = "select * from SCHOOL_TRIP where DESTINATION like "+dest
+    cur.execute(q)
+    res = cur.fetchall()
+    if len(res) == 0:
+        print("\nNo Trip Details Found\n")
+        return
+    print("💻📕"*15)
+    print("\t\tTRIP DETAILS")
+    print("💻📕"*15)
+    myTable = PrettyTable(["Destination","D_O_Destination","Incharge","No_o_Days","Class","Charges","No_o_Stu"])
+    for row in res:
+        myTable.add_row(row)
+    print("☆❁"*20)
+    print(myTable)
+    print("☆❁"*20)
+    print("\n")
+    print("💻📕"*15)
+
+#Function to manage records of sports 
+def manage_schoolTrip():
+    while True:
+        print("🌌🌕"*15)
+        print("\t\t 1 -- add a new trip detail")
+        print("\t\t 2 -- display all school trip details")
+        print("\t\t 3 -- search for a school trip")
+        print("\t\t 4 -- go back to main menu")
+        print("🌌🌕"*15)
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            addTrip()
+        elif ch == 2:
+            displayTrip()
+        elif ch == 3:
+            searchTrip()
+        elif ch == 4:
+            break
+        else:
+            print("Invalid Digit Pressed")
+            print("\n")
+            
+#login screen
+a = rd.randint(1,9)
+b = rd.randint(1,9)
+c = rd.randint(1,9)
+d = rd.randint(1,9)
+e = rd.randint(1,9)
+f = rd.randint(1,9)
+num = str(a)+str(b)+str(c)+str(d)+str(e)+str(f)
+
+#MAIN CODE 
+print("\t\t",num)
+n = int(input("Enter The OTP Shown Above : "))
+if str(n) == num:
+    print("🥳🥳"*15)
+    print("YAYYIIEE...ACCESS GRANTED..!!")
+    print("\n\n\n")
+    while con.is_connected():
+        ch = welcome()
+        if ch == 1:
+            manage_students()
+        elif ch == 2:
+            manage_attendance()
+        elif ch == 3:
+            manage_teachers()
+        elif ch == 4:
+            manage_classes()
+        elif ch == 5:
+            manage_sports()
+        elif ch == 6:
+            manage_staffMembers()
+        elif ch == 7:
+            enroll_member()
+        elif ch == 8:
+            show_enrollments()
+        elif ch == 9:
+            manage_fee()
+        elif ch == 10:
+            manage_schoolTrip()
+        elif ch == 11:
+            manage_batches()
+        elif ch == 12:
+            manage_members()
+        elif ch == 13:
+            print("Thanks For Using This Software... :')")
+            break
+        else:
+            print("-__________- \n itne options kaafi nhi the 😒😒")
+            break
+else:
+    print("Seems like it's not a human being -__-")
+    print("You Can't Access the Information. SORRY >_____<")      
+
