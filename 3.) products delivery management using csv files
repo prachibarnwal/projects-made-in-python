@@ -1,0 +1,248 @@
+import csv
+import os
+
+
+def write():
+    f = open("parcel.csv", "a", newline='')
+    print("-" * 60)
+    cid = int(input("Enter Courier i'd : "))
+    senders_name = input("Enter Sender's Name : ")
+    receivers_name = input("Enter Receiver's Name : ")
+    date_of_dispatch = input("Enter Date of Dispatch (in dd-mm-yyyy format) : ")
+    date_of_delivery = input("Enter Date of Delivery (in dd-mm-yyyy format) : ")
+    cost = int(input("Enter Cost of Packet : "))
+    weight = eval(input("Enter Weight of Packet : "))
+    senders_mobno = int(input("Enter SENDER'S Mobile Number : "))
+    receivers_mobno = int(input("Enter RECEIVER'S Mobile Number : "))
+    lod = [cid, senders_name, receivers_name, date_of_dispatch, date_of_delivery, cost, weight, senders_mobno,
+           receivers_mobno]
+    cw = csv.writer(f)
+    cw.writerow(lod)
+    print("-" * 60)
+    print("Delivery Details Added SUCCESSFULLY.....!!\n")
+    f.close()
+
+
+def show():
+    with open("parcel.csv", "r") as f:
+        print("-" * 60)
+        cr = csv.reader(f)
+        for data in cr:
+            print(data)
+            print("\n")
+
+def search():
+    with open("parcel.csv", "r") as f:
+        print("-" * 60)
+        cr = csv.reader(f)
+        while True:
+            f.seek(0)
+            print("Press 1 - to search by COURIER ID")
+            print("Press 2 - to search by Date-of-Dispatch")
+            print("Press 3 - to search by Date-of-Delivery")
+            print("Press 4 - to go back to Main Menu\n")
+            ch = int(input("Enter Your Choice : "))
+            print("\n")
+            if ch == 1:
+                courier_id = input("Enter The Courier i'd to be Searched : ")
+                for data in cr:
+                    if data[0] == courier_id:
+                        print("\t\tDATA FOUND.....!!")
+                        print(data, "\n")
+                        break
+                else:
+                    print("NO DATA FOUND WITH THIS I'D")
+                    print("-" * 60, "\n")
+                    break
+            elif ch == 2:
+                d_of_dispatch = input("Enter The Date-of-Dispatch of Parcel to be Searched : ")
+                for data in cr:
+                    if data[3] == d_of_dispatch:
+                        print("\t\tDATA FOUND.....!!")
+                        print(data, "\n")
+                        break
+                else:
+                    print("NO DATA FOUND WITH THIS DATE - OF - DISPATCH.")
+                    print("-" * 60, "\n")
+                    break
+            elif ch == 3:
+                d_of_delivery = input("Enter The Date-of-Delivery of the parcel to be Searched : ")
+                for data in cr:
+                    if data[4] == d_of_delivery:
+                        print("\t\tDATA FOUND.....!!")
+                        print(data, "\n")
+                        break
+                else:
+                    print("NO DATA FOUND WITH THIS I'D")
+                    print("-" * 60, "\n")
+            else:
+                print("You've Pressed Some Other Digit.......Try AGAIN.....!!!!")
+                return
+
+def delete():
+    c = 0
+    print("*" * 40)
+    f = open("parcel.csv", "r")
+    g = open("p2.csv", "w")
+    a = input("Enter Courier i'd of the Parcel to be DELETED : ")
+    print("-" * 40)
+    try:
+        while True:
+            d = csv.reader(f)
+            for data in d:
+                if data[0] == a:
+                    print("*" * 40)
+                    print(data)
+                    print("Employee ", d[1], " Deleted...!\n")
+                    print("*" * 40)
+                    c += 1
+                else:
+                    cw = csv.writer(g)
+                    cw.writerow(data)
+
+    except:
+        if c == 0:
+            print("No Employee Found with this ID ")
+        f.close()
+        g.close()
+        os.remove("parcel.csv")
+        os.rename("p2.csv", "parcel.csv")
+
+def update():
+    c = 0
+    print("*"*40)
+    f = open("parcel.csv","r")
+    g = open("p2.csv","w")
+    a = int(input("Enter the Courier i'd to be UPDATED : "))
+    print("-"*40)
+    cw = csv.writer(g)
+    try:
+        while True:
+            d = f.readlines()
+            for data in d:
+                if data[0] == a:
+                    print("*"*40)
+                    print("Courier Details of i'd ", d[0], " found.")
+                    print("*"*40,"\n")
+                    print("Press 1 - modify  sender's name")
+                    print("Press 2 - modify receiver's name ")
+                    print("Press 3 - modify date of dispatch")
+                    print("Press 4 - modify date of delivery")
+                    print("Press 5 - modify cost of parcel")
+                    print("Press 6 - modify weight of parcel")
+                    print("Press 7 - modify sender's mobile numbr ")
+                    print("Press 8 - modify receiver's mobile number ")
+                    print("Press 9 - modify courier id")
+                    print("Press 10 - use another feature of this code") 
+                    ch = int(input("Press what you want to do with this Courier Box id : "))
+                    if ch == 1:
+                        name = input("Enter Sender's Name to be Updated : ")
+                        d[1] = name
+                        print("-"*40)
+                        print("NAME UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 2:
+                        name = input("Enter Receiver's Name to be Updated : ")
+                        d[2] = name
+                        print("-"*40)
+                        print("NAME UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 3:
+                        name = input("Enter date-of-dispatch to be Updated : ")
+                        d[3] = name
+                        print("-"*40)
+                        print("DATE-OF-DISPATCH UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 4:
+                        name = input("Enter date-of-delivery to be Updated : ")
+                        d[4] = name
+                        print("-"*40)
+                        print("DATE-OF-DELIVERY UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 5:
+                        name = input("Enter New Cost of the Parcel to be Updated : ")
+                        d[5] = name
+                        print("-"*40)
+                        print("COST OF PARCEL UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 6:
+                        name = input("Enter Weight of the Parcel to be Updated : ")
+                        d[6] = name
+                        print("-"*40)
+                        print("WEIGHT OF THE PARCEL UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 7:
+                        name = input("Enter Sender's Mobile Number to be Updated : ")
+                        d[7] = name
+                        print("-"*40)
+                        print("SENDER'S MOBILE NUMBER UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 8:
+                        name = input("Enter Receiver's Mobile Number to be Updated : ")
+                        d[8] = name
+                        print("-"*40)
+                        print("RECEIVER's MOBILE NUMBER UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    elif ch == 9:
+                        name = input("Enter New Courier i'd to be Updated : ")
+                        d[0] = name
+                        print("-"*40)
+                        print("COURIER I'D UPDATED SUCCESSFULLY......!!")
+                        print("-"*40)
+                        c += 1
+                    else:
+                        break
+            else:
+                cw.writerow(data)
+    except:
+        if c == 0:
+            print("No Parcel Details Found with this ID ")
+        f.close()
+        g.close()
+        os.remove("parcel.csv")
+        os.rename("p2.csv","parcel.dat")
+
+
+
+while True:
+    print("*" * 55)
+    print("\tWELCOME TO AL'CODERS COURIER COMPANY\n")
+    print("*" * 55)
+    print("Press 1 - Write a Delivery Details")
+    print("Press 2 - Show All Delivery Details")
+    print("Press 3 - Search a Delivery Detail")
+    print("Press 4 - Delete a Delivery Record")
+    print("Press 5 - Update a Delivery Record")
+    print("Press 6 - To Exit ")
+    ch = int(input("Enter Your Choice : "))
+    if ch == 1:
+        write()
+    elif ch == 2:
+        show()
+    elif ch == 3:
+        search()
+    elif ch == 4:
+        delete()
+    elif ch == 5:
+        update()
+    elif ch == 6:
+        print("*"*45)
+        print("\n\tDIRECTED BY -- ANJALI LUTHRA")
+        print("*"*45)
+        print("\tMade by - Prachi Barnwal")
+        print("*"*45)
+        print("\tHope You'll Visit Again")
+        print("*"*45)
+        break
+    else:
+        print("You've only 6 options to press >_<")
+        print("You can try again if you want :)")
+        break
