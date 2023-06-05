@@ -1,0 +1,269 @@
+#library import
+import mysql.connector as sql
+import time
+import random as rd
+
+#setting connection
+mydb = sql.connect(host = "localhost", user = "root", password = "")
+
+#making cursor
+cr = mydb.cursor()
+
+#creating database
+q = "create database super_markett"
+cr.execute(q)
+q = "use super_markett"
+cr.execute(q)
+
+#bakery
+q = '''create table bakery(cid integer primary key,
+cake varchar(30) not null,
+flavour varchar(50),
+dateofm date,
+weight float,
+content varchar(100),
+price float)'''
+cr.execute(q)
+
+#BILLS
+q = '''create table bills(store_name varchar(15) not null,
+cname varchar(20),
+date_of_pur date,
+amount float)'''
+cr.execute(q)
+
+mydb.commit()
+
+
+def bakery():
+    #Function for adding an item to the menu ...
+    def additem():
+        print("\n")
+        print("😇🙃"*10)
+        print("\n")
+        cid = input("What's the Code of the Dish You want to add : ")
+        cake = input("Which type of Dish you want to add (cake / pizza / pastry / etc (name) : ")
+        flavour = input("Enter Flavour of the Dish : ")
+        dateofm = input("Enter Date of Manufacture : ")
+        weight = input("Enter weight(in grams) : ")
+        content = input("Enter Ingredients : ")
+        price = input("Enter the Price : ")
+        print("\nSTORING FOOD DETAILS.......")
+        time.sleep(2)
+        q = "insert into bakery values(%s,%s,%s,%s,%s,%s,%s)"
+        data = (cid,cake,flavour,dateofm,weight,content,price)
+        cr = mydb.cursor()
+        cr.execute(q,data)
+        print("\nDishh Deatils Inserted.......!!!!")
+        time.sleep(1)
+        print("👍😎"*10)
+        print("\n")
+        mydb.commit()
+    #Function to refill ingredients or flavour
+    def refillitem():
+        cid = input("Enter the Code of the Dish whose ingredients/flavour you want to Change  : ")
+        print("Press 1 - to change Flavour")
+        print("Press 2 - to change their Ingredients")
+        print("Press 3 - to goto the main menu")
+        a = int(input("What do You want to do : "))
+        if a == 1:
+            flavour1 = input("What's the new flavour to be replaced : ")
+            q = "update bakery set flavour = %s where cid = %s"
+            d = (flavour1,cid)
+            cr = mydb.cursor()
+            cr.execute(q,d)
+            print("\n")
+            print("😎😄"*8)
+            print("FLAVOUR   CHANGED......!!")
+            print("😎😄"*8)
+            print("\n")
+            mydb.commit()
+        elif a == 2:
+            content1 = input("What's the new Ingredients to be replaced : ")
+            q = "update bakery set content = %s where cid = %s"
+            d = (content1,cid)
+            cr = mydb.cursor()
+            cr.execute(q,d)
+            print("\n")
+            print("😎😄"*8)
+            print("INGREDIENTS   UPDATED......!!")
+            print("😎😄"*8)
+            print("\n")
+            mydb.commit()
+            
+        else:
+            print("\n")
+            
+    #Function to show all dish detailss
+    def showitems():
+        print("🤩😄"*10)
+        q = "select * from bakery"
+        cr = mydb.cursor()
+        cr.execute(q)
+        res = cr.fetchall()
+        print("\n","-"*155)
+        print("Code\tName\t\tflavour\t\tweight\t\tPrice")
+        print("-"*155)
+        for k in res:
+            print(k[0],"\t",k[1],"\t\t",k[2],"\t\t",k[-3],"\t\t",k[-1])
+            print("-"*155)
+    #Function to search a dish
+    def searchitem():
+        cid = input("Enter the DISH'S CODE : ")
+        q = "select * from bakery where cid = "+cid
+        cr = mydb.cursor()
+        cr.execute(q)
+        k = cr.fetchone()
+        if k == None:
+            print("\nNo Dish Found With This Code\n")
+            print("😣😣"*10)
+        else:
+            print("\nDish Found......!!")
+            print("😀😀"*10,"\n")
+            print("-"*95)
+            print("Code\tName\t\tflavour\t\tweight\t\tPrice")
+            print("-"*95)
+            print(k[0],"\t",k[1],"\t\t",k[2],"\t\t",k[-3],"\t\t",k[-1])
+            print("-"*95)
+       
+    #FUNCTION TO DELETE A DISH'S DETAIL
+    def deleteitem():
+        cid = input("Enter the Code of the Dish to be Deleted : ")
+        q = "delete from bakery where cid = "+cid
+        cr = mydb.cursor()
+        cr.execute(q)
+        print("\nDish Deleted......!!\n")
+        print("😒😒"*10)
+        print("\n\n")
+        mydb.commit()
+
+    #Function for making billl......
+    def billitem():
+        cname = input("Enter Customer's Name : ")
+        date = input("Enter the Date of Purchase (in yyyy_mm-dd) : ")
+        amount = 0
+        cr = mydb.cursor()
+        while True:
+            code = input("Enter Dish code : ")
+            q = "select * from bakery where cid = "+code
+            cr.execute(q)
+            res = cr.fetchone()
+            if res == None:
+                print("\nNo Dish Found With This ID\n")
+                print("😣😣"*10)
+            else:
+                price = int(res[-1])
+                print("Price of Dish is : ",price)
+                qty = int(input("How Many Piece of the Item You Want to Have : "))
+                bill = price * qty
+                amount += bill
+                print("Amount for All Items are : ",amount)
+                ans = input("Do You Want to Have More Food in Your House : ")
+                if ans.lower() == "no":
+                    print("Calculating Your Bill ....... ")
+                    time.sleep(2)
+                    break
+        print("Total Bill Amount to be paid by MR./MISS ",cname," is : ",amount)
+        q = "insert into bills values(%s,%s,%s,%s)"
+        data = ('bakery',cname,date,amount)
+        cr.execute(q,data)
+        mydb.commit()
+    #FUNCTION TO DISPLAY PREVIOUS BILLS
+    def displaybill():
+        print("🤩😄"*10)
+        q = "select * from bills where Store_name = 'bakery'"
+        cr = mydb.cursor()
+        cr.execute(q)
+        res = cr.fetchall()
+        print("\n")
+        print("-"*155)
+        print("shop_name\tcustomer_name\t\tDate_of_Pur\t\tAmount")
+        print("-"*155)
+        for k in res:
+            print(k[0],"\t\t",k[1],"\t\t",k[-2],"\t\t",k[-1])
+            print("-"*155)
+        print("\n")
+        
+    while True:
+        print("😇🙃"*10)
+        print("\tAHNOOR   BAKERY   CORNER")
+        print("😇🙃"*10)
+        print("\n")
+        print("Press 1 - Add New Item to the Menu")
+        print("Press 2 - Refill an item")
+        print("Press 3 - Show All Eatables")
+        print("Press 4 - Search an Cake/Pizza/Burger")
+        print("Press 5 - Delete an Eatable Details")
+        print("Press 6 - for Billing of Items")
+        print("Press 7 - Display Previous Bills")
+        print("press 8 - to Exit")
+        print("\n")
+        opt = int(input("Enter Your Choice : "))
+        if opt == 1:
+            additem()
+        elif opt == 2:
+            refillitem()
+        elif opt == 3:
+            showitems()
+        elif opt == 4:
+            searchitem()
+        elif opt == 5:
+            deleteitem()
+        elif opt == 6:
+            billitem()
+        elif opt == 7:
+            displaybill()
+        elif opt == 8:
+            print("THANKS FOR VISITING..!!")
+            print("✌😄"*10)
+            print("\t\t Have a Sweet Life Ahead")
+            print("*"*95)
+            break
+        else:
+            print("You're having only 8 options to choose -__-")
+            break
+
+#setting connection
+mydb = sql.connect(host = "localhost", user = "root", password = "")
+
+#making cursor
+cr = mydb.cursor()
+
+#Selecting database
+q = "use super_markett"
+cr.execute(q)
+
+#login screen
+a = rd.randint(1,9)
+b = rd.randint(1,9)
+c = rd.randint(1,9)
+d = rd.randint(1,9)
+e = rd.randint(1,9)
+num = str(a)+str(b)+str(c)+str(d)+str(e)
+
+print("\t\t",num)
+n = int(input("Enter The Number Shown Above : "))
+if str(n) == num:
+    print("Yayyyiieee...You've Successfully Entered the Bakery..!!")
+    while mydb. is_connected():
+        print("🥳🎁"*8)
+        print("\n")
+        print("🥳🎁"*8)
+        print("Press 1 - to go to the Bakery  ☆")
+        print("Press 2 - to Exit the Bakery  ☆\n")
+        ch = int(input("Enter Your Choice : "))
+        if ch == 1:
+            bakery()
+        elif ch == 2:
+            print("🙂🙃"*10)
+            print("\t\tThanks for Visiting....!!!")
+            print("🙂🙃"*10)
+            break
+        else:
+            print("You're Having Only 2 Choices -___-")
+            print("Try Again......!!!")
+else:
+    print("Seems like it's not a human being -__-")
+    print("You Can't Enter The Market. SORRY >_____<")
+
+
